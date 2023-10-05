@@ -1,0 +1,37 @@
+spring:
+  main:
+    web-application-type: none
+  application:
+    name: fillbagjob  
+  batch:
+    job:
+      enabled: true
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: true
+        all-namespaces: true
+      enabled: 'true'
+    loadbalancer:
+      mode:
+        POD
+      ribbon:
+        enabled: 'false'
+  jmx:
+    enabled: 'false'
+  devtools:
+    livereload:
+     enabled: 'false'
+  logging:
+   level:
+    org:
+      springframework: DEBUG
+  management:
+       metrics:
+          export:
+             prometheus:
+                pushgateway:
+                  enabled: true
+                  base-url: http://0.0.0.0:9091
+                  job: fillbagjob
+                  push-rate: 10s      

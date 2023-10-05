@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fillbagjob
+  namespace: abc-job
+spec:
+  schedule: "42 13 * * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+      spec:
+        template:
+         spec:
+          containers:
+            - name: fillbagjob
+              image: abc.azurecr.io/mikohata/fillbagjob:1.0.0
+              imagePullPolicy: Always
+              volumeMounts:
+               - mountPath: /tmp
+                 name: readonlyfs
+                 readOnly: false
+               - mountPath: /app/resources/logback-spring.xml
+                 subPath: logback-spring.xml
+                 name: logback-xml
+               - mountPath: /app/resources/application.yml
+                 subPath: application.yml
+                 name: application-yml
+              env:
+                - name: SPRING_PROFILES_ACTIVE
+                  value: "dev,kubernetes"
+                - name: appName
+                  value: "fillbagjob"
+              envFrom:
+                - secretRef:
+                   name: fillbagjob-creds1
+          volumes:
+            - name: logback-xml
+              configMap: 
+               name: fillbagjob-logback-xml
+            - name: application-yml
+              configMap:
+               name: fillbagjob-application-yml
+            - name: readonlyfs
+              emptyDir: {}
+          tolerations:
+           - key: "kubernetes.azure.com/scalesetpriority"
+             operator: "Equal"
+             value: "spot"
+             effect: "NoSchedule"
+          serviceAccountName: fillbagjob
+          restartPolicy: OnFailure
+           
